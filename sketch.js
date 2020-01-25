@@ -35,7 +35,7 @@ let iconSpacing;
 
 function setup() {
   // put setup code here
-  createCanvas(windowWidth, windowHeight-30);  // Crude fix for compensating for scrollbars
+  createCanvas(windowWidth, windowHeight);  // Crude fix for compensating for scrollbars
   colorMode(HSB);
   background(0, 0, 0);
   scaleUI();
@@ -59,7 +59,7 @@ function drawMap() {
   let mapScaledHeight;
   let mapScale;
   if (currentMap.width < currentMap.height) {
-    mapScale = (windowWidth/currentMap.height);
+    mapScale = (width/currentMap.height);
     translate(width/2, height/2);
     rotate(HALF_PI);
     imageMode(CENTER);
@@ -69,9 +69,9 @@ function drawMap() {
     translate(-width/2, -height/2);
   }
   else {
-    mapScale = (windowWidth/currentMap.width);
-    if ((mapScale * currentMap.height) > windowHeight) {
-      mapScale = (windowHeight/currentMap.height);
+    mapScale = (width/currentMap.width);
+    if ((mapScale * currentMap.height) > height) {
+      mapScale = (height/currentMap.height);
     }
     image(currentMap, 0, 0, currentMap.width*mapScale, currentMap.height*mapScale);
   }
@@ -141,9 +141,17 @@ function touchEnded() {
 
     // Toggle fullscreen:
     if (mouseY > (margin + 4*iconSize + 3*iconSpacing) && mouseY < (margin +5*iconSize + 4*iconSpacing)) {
-      fullscreen(!stateFullScreen);
+      //fullscreen(!stateFullScreen);
+      if (!stateFullscreen) {
+        document.documentElement.requestFullscreen();
+        stateFullscreen = !stateFullscreen;
+      }
+      else {
+        document.exitFullscreen();
+        stateFullscreen = !stateFullscreen;
+      }
       redraw();
-      stateFullscreen = !stateFullscreen;
+      
       return false;
     }
 
