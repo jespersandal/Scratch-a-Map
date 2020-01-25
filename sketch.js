@@ -26,7 +26,12 @@ let imgRefresh;
 let imgOpenFile;
 let imgFullscreenOn;
 let imgFullscreenOff;
-let input;
+
+// DOM elements:
+//let input;
+let inputWrapper;
+let filePicker;
+let stateShowPicker;
 
 // UI sizing:
 let margin;
@@ -35,12 +40,17 @@ let iconSpacing;
 
 function setup() {
   // put setup code here
-  createCanvas(windowWidth, windowHeight-30);  // Crude fix for compensating for scrollbars
+  createCanvas(windowWidth, windowHeight);  // Crude fix for compensating for scrollbars
   colorMode(HSB);
   background(0, 0, 0);
   scaleUI();
-  input = createFileInput(handleFile);
-  styleInputButton();
+  // Adding HTML for the file input to load a map:
+  inputWrapper = select('.input-wrapper');
+  filePicker = createFileInput(handleFile);
+  filePicker.parent(inputWrapper);
+  filePicker.hide();
+  inputWrapper.hide();
+
   initiateMenu();
   currentMap = loadImage('dungeonmap.jpeg');
   fog = createImage(width, height);
@@ -59,7 +69,7 @@ function drawMap() {
   let mapScaledHeight;
   let mapScale;
   if (currentMap.width < currentMap.height) {
-    mapScale = (windowWidth/currentMap.height);
+    mapScale = (width/currentMap.height);
     translate(width/2, height/2);
     rotate(HALF_PI);
     imageMode(CENTER);
@@ -69,9 +79,9 @@ function drawMap() {
     translate(-width/2, -height/2);
   }
   else {
-    mapScale = (windowWidth/currentMap.width);
-    if ((mapScale * currentMap.height) > windowHeight) {
-      mapScale = (windowHeight/currentMap.height);
+    mapScale = (width/currentMap.width);
+    if ((mapScale * currentMap.height) > height) {
+      mapScale = (height/currentMap.height);
     }
     image(currentMap, 0, 0, currentMap.width*mapScale, currentMap.height*mapScale);
   }
@@ -141,9 +151,17 @@ function touchEnded() {
 
     // Toggle fullscreen:
     if (mouseY > (margin + 4*iconSize + 3*iconSpacing) && mouseY < (margin +5*iconSize + 4*iconSpacing)) {
-      fullscreen(!stateFullScreen);
+      //fullscreen(!stateFullScreen);
+      if (!stateFullscreen) {
+        document.documentElement.requestFullscreen();
+        stateFullscreen = !stateFullscreen;
+      }
+      else {
+        document.exitFullscreen();
+        stateFullscreen = !stateFullscreen;
+      }
       redraw();
-      stateFullscreen = !stateFullscreen;
+      
       return false;
     }
 
@@ -241,16 +259,17 @@ function showUI() {
     image(imgRefresh, margin, iconPosY, iconSize, iconSize);
     iconPosY += (iconSpacing + iconSize);
     image(imgOpenFile, margin, iconPosY, iconSize, iconSize);
-    // Adding a DOM input element on top of the open file image:
-    //input = createFileInput(handleFile);
-    input.position(margin, iconPosY);
-    //input.addClass('invisible');
-    input.show();
+    // Adding a DOM input element and a label element on top of the open file image:
+    inputWrapper.position(margin, iconPosY);
+    inputWrapper.show();
+    filePicker.position(margin, iconPosY);
+    filePicker.show();
   }
   else {
     rect(0, 0, 100, 100);
     image(imgMenu, margin, margin, iconSize, iconSize);
-    input.hide();
+    filePicker.hide();
+    inputWrapper.hide();
   }
   redraw();
 }
@@ -264,8 +283,5 @@ function initiateMenu() {
   imgOpenFile = loadImage('./data/baseline_folder_open_white_48dp.png');
   imgFullscreenOn = loadImage('./data/baseline_fullscreen_white_48dp.png');
   imgFullscreenOff = loadImage('./data/baseline_fullscreen_exit_white_48dp.png');
-}
-function styleInputButton() {
-  //input.addClass('invisible');
-  input.size(iconSize, iconSize);
+  filePicker.hide();
 }
