@@ -44,8 +44,7 @@ function setup() {
   colorMode(HSB);
   background(0, 0, 0);
   scaleUI();
-  //input = createFileInput(handleFile);
-  //styleInputButton();
+  // Adding HTML for the file input to load a map:
   inputWrapper = select('.input-wrapper');
   filePicker = createFileInput(handleFile);
   filePicker.parent(inputWrapper);
@@ -260,14 +259,7 @@ function showUI() {
     image(imgRefresh, margin, iconPosY, iconSize, iconSize);
     iconPosY += (iconSpacing + iconSize);
     image(imgOpenFile, margin, iconPosY, iconSize, iconSize);
-    // Adding a DOM input element on top of the open file image:
-    //input = createFileInput(handleFile);
-    //inputWrapper.position(margin, iconPosY);
-    //inputWrapper.show();
-    //input.position(margin, iconPosY);
-    //input.addClass('invisible');
-    //input.show();
-    //filePicker = document.getElementById('mapFile');
+    // Adding a DOM input element and a label element on top of the open file image:
     inputWrapper.position(margin, iconPosY);
     inputWrapper.show();
     filePicker.position(margin, iconPosY);
@@ -276,7 +268,6 @@ function showUI() {
   else {
     rect(0, 0, 100, 100);
     image(imgMenu, margin, margin, iconSize, iconSize);
-    //input.hide();
     filePicker.hide();
     inputWrapper.hide();
   }
@@ -293,12 +284,4 @@ function initiateMenu() {
   imgFullscreenOn = loadImage('./data/baseline_fullscreen_white_48dp.png');
   imgFullscreenOff = loadImage('./data/baseline_fullscreen_exit_white_48dp.png');
   filePicker.hide();
-}
-function styleInputButton() {
-  //input.addClass('invisible');
-  let inputInnerHTML = '<input type="file" id="pickMap">';
-  inputWrapper = createElement('label', inputInnerHTML);
-  inputWrapper.attribute('for', 'pickMap')
-  inputWrapper.addClass('input-wrapper');
-  //input.size(iconSize, iconSize);
 }
