@@ -3,34 +3,66 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>p5.js example</title>
+    <title>Scratch-A-Map</title>
     <style> body {
               padding: 0; 
               margin: 0;
               touch-action: none;
               background-color: black;
+              overflow-x: hidden;
+              overflow-y: hidden;
             } 
-            .invisible {
+            /* .invisible {
               background-color: rgba(0,0,0,0);
               font-size: 14px;
               border: none;
               padding: 40px;
               color: rgba(194, 37, 37, 0);
-            }
-            input {
+            } */
+            /* input {
               background-color: rgba(0,0,0,0);
               font-size: 14px;
               border: none;
               padding: 40px;
               color: rgba(0, 0, 0, 0);
+            } */
+            .input-wrapper {
+              overflow: hidden;
+              position: relative;
+              display: inline-block;
+              background: rgba(0,0,0,0);
+              border-radius: .5em;;
+              padding: 36px;
+            }
+            [type="file"] {
+              cursor: inherit;
+              display: block;
+              font-size: 999px;
+              filter: alpha(opacity=0);
+              min-height: 100%;
+              min-width: 100%;
+              opacity: 0;
+              position: absolute;
+              right: 0;
+              text-align: right;
+              top: 0;
+              border: 0;
+              clip: rect(0, 0, 0, 0);
+              height: 1px;
+              overflow: hidden;
+              padding: 0;
+              white-space: nowrap;
+              width: 1px; 
             }
     </style>
     <script src="p5.js"></script>
     <script src="p5.sound.js"></script>
     <script src="sketch.js"></script>
-    <!-- <script src="handleFiles.js"></script> -->
+
   </head>
   <body>
-    <!-- <input type="file" name="mapFile" accept="image/*" onChange="handleFile(event)"> -->
+    <label class="input-wrapper">
+
+  </label>
   </body>
 </html>

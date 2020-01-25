@@ -26,7 +26,12 @@ let imgRefresh;
 let imgOpenFile;
 let imgFullscreenOn;
 let imgFullscreenOff;
-let input;
+
+// DOM elements:
+//let input;
+let inputWrapper;
+let filePicker;
+let stateShowPicker;
 
 // UI sizing:
 let margin;
@@ -39,8 +44,14 @@ function setup() {
   colorMode(HSB);
   background(0, 0, 0);
   scaleUI();
-  input = createFileInput(handleFile);
-  styleInputButton();
+  //input = createFileInput(handleFile);
+  //styleInputButton();
+  inputWrapper = select('.input-wrapper');
+  filePicker = createFileInput(handleFile);
+  filePicker.parent(inputWrapper);
+  filePicker.hide();
+  inputWrapper.hide();
+
   initiateMenu();
   currentMap = loadImage('dungeonmap.jpeg');
   fog = createImage(width, height);
@@ -251,14 +262,23 @@ function showUI() {
     image(imgOpenFile, margin, iconPosY, iconSize, iconSize);
     // Adding a DOM input element on top of the open file image:
     //input = createFileInput(handleFile);
-    input.position(margin, iconPosY);
+    //inputWrapper.position(margin, iconPosY);
+    //inputWrapper.show();
+    //input.position(margin, iconPosY);
     //input.addClass('invisible');
-    input.show();
+    //input.show();
+    //filePicker = document.getElementById('mapFile');
+    inputWrapper.position(margin, iconPosY);
+    inputWrapper.show();
+    filePicker.position(margin, iconPosY);
+    filePicker.show();
   }
   else {
     rect(0, 0, 100, 100);
     image(imgMenu, margin, margin, iconSize, iconSize);
-    input.hide();
+    //input.hide();
+    filePicker.hide();
+    inputWrapper.hide();
   }
   redraw();
 }
@@ -272,8 +292,13 @@ function initiateMenu() {
   imgOpenFile = loadImage('./data/baseline_folder_open_white_48dp.png');
   imgFullscreenOn = loadImage('./data/baseline_fullscreen_white_48dp.png');
   imgFullscreenOff = loadImage('./data/baseline_fullscreen_exit_white_48dp.png');
+  filePicker.hide();
 }
 function styleInputButton() {
   //input.addClass('invisible');
-  input.size(iconSize, iconSize);
+  let inputInnerHTML = '<input type="file" id="pickMap">';
+  inputWrapper = createElement('label', inputInnerHTML);
+  inputWrapper.attribute('for', 'pickMap')
+  inputWrapper.addClass('input-wrapper');
+  //input.size(iconSize, iconSize);
 }
