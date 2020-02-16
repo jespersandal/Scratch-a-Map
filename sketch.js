@@ -15,6 +15,7 @@ let stateShowMenu = false;
 let stateFullscreen = false;
 let stateLocked = false;
 let stateErase = false;
+let stateFogOpacity = true; // True means a semi-transparent fog. False means completely opaque.
 
 // UI icons:
 let imgMenu;
@@ -22,6 +23,8 @@ let imgBlackBrush;
 let imgWhiteBrush;
 let imgUnlocked;
 let imgLocked;
+let imgOpacityOff;
+let imgOpacityOn;
 let imgRefresh;
 let imgOpenFile;
 let imgFullscreenOn;
@@ -55,13 +58,12 @@ function setup() {
   currentMap = loadImage('dungeonmap.jpeg');
   fog = createImage(width, height);
   initiateFog();
-  //noLoop();
+  //noLoop();  // It is better to toggle this at user input events.
 }
 function draw() {
-  // put drawing code here
   background(0, 0, 0);
   drawMap();
-  image(fog, 0, 0);
+  drawFog();
   showUI();
 }
 function drawMap() {
@@ -86,8 +88,18 @@ function drawMap() {
     image(currentMap, 0, 0, currentMap.width*mapScale, currentMap.height*mapScale);
   }
 }
+function drawFog() {
+  if (stateFogOpacity) {
+    tint(0, 0, 0, 0.5);
+    image(fog, 0, 0);
+    noTint();
+  }
+  else {
+    image(fog, 0, 0);
+  }
+}
 function touchMoved() {
-  drawFog();
+  scratchFog();
 }
 function touchStarted() {
   // Menu is open, but user pressed outside menu area:
@@ -149,6 +161,18 @@ function touchEnded() {
       return false;
     }
 
+    // Toggle fog opacity:
+    if (mouseY > (margin + 4*iconSize + 3*iconSpacing) && mouseY < (margin +5*iconSize + 4*iconSpacing)) {
+      if (stateFogOpacity) {
+        stateFogOpacity = false;
+      }
+      else {
+        stateFogOpacity = true;
+      }
+      redraw();
+      return false;
+    }
+
     // Toggle fullscreen:
     if (mouseY > (margin + 4*iconSize + 3*iconSpacing) && mouseY < (margin +5*iconSize + 4*iconSpacing)) {
       //fullscreen(!stateFullScreen);
@@ -177,7 +201,7 @@ function touchEnded() {
     noLoop();
   }
 }
-function drawFog() {
+function scratchFog() {
   // Check if the tool is locked:
   if (stateLocked) {
     redraw();
@@ -231,7 +255,7 @@ function scaleUI() {
   iconSpacing = 20*displayDensity();
 }
 function showUI() {
-  let fullMenuHeight = (margin*2) + (iconSize*7) + (iconSpacing*6);
+  let fullMenuHeight = (margin*2) + (iconSize*8) + (iconSpacing*7);
   fill(0, 0, 0);
   if (stateShowMenu) {
     rect(0, 0, 100, fullMenuHeight);
@@ -247,6 +271,13 @@ function showUI() {
     }
     else {
       image(imgUnlocked, margin, iconPosY, iconSize, iconSize);
+    }
+    iconPosY += (iconSpacing + iconSize);
+    if (stateFogOpacity) {
+      image(imgOpacityOff, margin, iconPosY, iconSize, iconSize);
+    }
+    else {
+      image(imgOpacityOn, margin, iconPosY, iconSize, iconSize);
     }
     iconPosY += (iconSpacing + iconSize);
     if (stateFullscreen) {
@@ -279,6 +310,8 @@ function initiateMenu() {
   imgWhiteBrush = loadImage('./data/baseline_lens_white_48dp.png');
   imgUnlocked = loadImage('./data/baseline_lock_open_white_48dp.png');
   imgLocked = loadImage('./data/baseline_lock_white_48dp.png');
+  imgOpacityOff = loadImage('./data/outline_visibility_white_48dp.png');
+  imgOpacityOn = loadImage('./data/outline_visibility_off_white_48dp.png');
   imgRefresh = loadImage('./data/baseline_refresh_white_48dp.png');
   imgOpenFile = loadImage('./data/baseline_folder_open_white_48dp.png');
   imgFullscreenOn = loadImage('./data/baseline_fullscreen_white_48dp.png');
