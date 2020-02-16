@@ -170,7 +170,7 @@ function touchEnded() {
     }
 
     // Toggle fullscreen:
-    if (mouseY > (margin + 5*iconSize + 4*iconSpacing) && mouseY < (margin +5*iconSize + 4*iconSpacing)) {
+    if (mouseY > (margin + 5*iconSize + 4*iconSpacing) && mouseY < (margin +6*iconSize + 5*iconSpacing)) {
       //fullscreen(!stateFullScreen);
       if (!stateFullscreen) {
         document.documentElement.requestFullscreen();
@@ -186,7 +186,7 @@ function touchEnded() {
     }
 
     // Refresh to reset the fog:
-    if (mouseY > (margin + 6*iconSize + 5*iconSpacing) && mouseY < (margin + 6*iconSize + 5*iconSpacing)) {
+    if (mouseY > (margin + 6*iconSize + 5*iconSpacing) && mouseY < (margin + 7*iconSize + 6*iconSpacing)) {
       initiateFog();
       stateShowMenu = false;
       redraw();
