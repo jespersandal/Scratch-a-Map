@@ -1,10 +1,7 @@
-// TODO: LoadFile to read an image file
 // TODO: preserve the updated fog in local storage using p5 storeItem()
-// TODO: size the image and the fog
-// TODO: adjust for pixelDensity
-// TODO: Change from full framerate to noLoop/redraw to reduce power consumption
-// TODO: UI for loading image, reset fog, undo or switch brush, fullscreen, lock
+// TODO: size the image and the fog after switch to fullscreen
 
+// Global variables:
 let currentMap;
 let fog;
 let userFile;
@@ -31,7 +28,6 @@ let imgFullscreenOn;
 let imgFullscreenOff;
 
 // DOM elements:
-//let input;
 let inputWrapper;
 let filePicker;
 let stateShowPicker;
@@ -58,7 +54,6 @@ function setup() {
   currentMap = loadImage('dungeonmap.jpeg');
   fog = createImage(width, height);
   initiateFog();
-  //noLoop();  // It is better to toggle this at user input events.
 }
 function draw() {
   background(0, 0, 0);
@@ -123,6 +118,7 @@ function touchEnded() {
     }
   }
   else if (mouseX < 100 && stateShowMenu) {
+    // Toggle the menu (burger button):
     if (mouseY < (70*displayDensity())) {
       stateShowMenu = false;
       noLoop();
