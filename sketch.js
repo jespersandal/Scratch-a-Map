@@ -36,6 +36,7 @@ let stateShowPicker;
 let margin;
 let iconSize;
 let iconSpacing;
+let brushSize;
 
 function setup() {
   // put setup code here
@@ -208,10 +209,10 @@ function scratchFog() {
     brushColor = color(0, 0, 0, 255)
   }
   fog.loadPixels();
-  let x = mouseX - 20;
-  let y = mouseY - 20;
-  for (let i = 0; i < 40; i++) {
-    for (let j = 0; j < 40; j++) {
+  let x = mouseX - brushSize/2;
+  let y = mouseY - brushSize/2;
+  for (let i = 0; i < brushSize; i++) {
+    for (let j = 0; j < brushSize; j++) {
       fog.set(x+i, y+j, brushColor);
     }
   }
@@ -246,15 +247,33 @@ function changeMap(userMap) {
   redraw();
 }
 function scaleUI() {
-  margin = 10*displayDensity();
-  iconSize = 50*displayDensity();
-  iconSpacing = 20*displayDensity();
+  // This function lets us adjust the scale of the UI (menu) to fit smaller screens and screens with
+  //   high pixel density.
+  let scaleFactor = 1;
+  console.log(displayDensity());
+  let smallestDim = Math.min(width, height)*displayDensity();
+  console.log(smallestDim);
+  if (smallestDim < 960 && smallestDim >= 720) {
+    scaleFactor = 0.75;
+  }
+  else if (smallestDim < 720 && smallestDim >= 480) {
+    scaleFactor = 0.5;
+  }
+  else if (smallestDim < 480) {
+    scaleFactor = 0.25;
+  }
+  console.log(scaleFactor);
+  margin = 8*displayDensity()*scaleFactor;
+  iconSize = 48*displayDensity()*scaleFactor;
+  iconSpacing = 16*displayDensity()*scaleFactor;
+  brushSize = 40*scaleFactor;
 }
 function showUI() {
   let fullMenuHeight = (margin*2) + (iconSize*8) + (iconSpacing*7);
+  let fullMenuWidth = (margin*2) + iconSize;
   fill(0, 0, 0);
   if (stateShowMenu) {
-    rect(0, 0, 100, fullMenuHeight);
+    rect(0, 0, fullMenuWidth, fullMenuHeight);
     let iconPosY = margin;
     image(imgMenu, margin, iconPosY, iconSize, iconSize);
     iconPosY += (iconSpacing + iconSize);
@@ -293,7 +312,7 @@ function showUI() {
     filePicker.show();
   }
   else {
-    rect(0, 0, 100, 100);
+    rect(0, 0, fullMenuWidth, fullMenuWidth);
     image(imgMenu, margin, margin, iconSize, iconSize);
     filePicker.hide();
     inputWrapper.hide();
