@@ -4,6 +4,7 @@
 // Global variables:
 let currentMap;
 let fog;
+let lastFog;
 let userFile;
 
 // Application states:
@@ -16,6 +17,7 @@ let stateFogOpacity = true; // True means a semi-transparent fog. False means co
 
 // UI icons:
 let imgMenu;
+let imgUndo;
 let imgBlackBrush;
 let imgWhiteBrush;
 let imgUnlocked;
@@ -55,6 +57,7 @@ function setup() {
   currentMap = loadImage('dungeonmap.jpeg');
   fog = createImage(width, height);
   initiateFog();
+  lastFog = fog.get();
 }
 function draw() {
   background(0, 0, 0);
@@ -104,6 +107,11 @@ function touchStarted() {
     redraw();
     return false;
   }
+  else if (mouseX > 100 && !stateShowMenu && !stateLocked) {
+    // Save the fog for undo:
+    lastFog = fog.get();
+    redraw();
+  }
   else {
     redraw();
   }
@@ -120,7 +128,7 @@ function touchEnded() {
   }
   else if (mouseX < 100 && stateShowMenu) {
     // Toggle the menu (burger button):
-    if (mouseY < (70*displayDensity())) {
+    if (mouseY < (margin + iconSize + iconSpacing)) {
       stateShowMenu = false;
       noLoop();
       redraw();
@@ -128,8 +136,18 @@ function touchEnded() {
     }
     // For the individual menu items:
 
-    // Set brush to black (draw fog):
+    // Undo/redo:
     if (mouseY > (margin + iconSize + iconSpacing) && mouseY < (margin +2*iconSize + iconSpacing)) {
+      let tempFog = fog.get();
+      fog = lastFog.get();
+      lastFog = tempFog.get();
+      stateShowMenu = false;
+      redraw();
+      return false;
+    }
+
+    // Set brush to black (draw fog):
+    if (mouseY > (margin + 2*iconSize + iconSpacing) && mouseY < (margin +3*iconSize + 2*iconSpacing)) {
       stateErase = true;
       stateShowMenu = false;
       redraw();
@@ -137,7 +155,7 @@ function touchEnded() {
     }
     
     // Set brush to white/transparent (erase fog):
-    if (mouseY > (margin + 2*iconSize + iconSpacing) && mouseY < (margin +3*iconSize + 2*iconSpacing)) {
+    if (mouseY > (margin + 3*iconSize + iconSpacing) && mouseY < (margin +4*iconSize + 3*iconSpacing)) {
       stateErase = false;
       stateShowMenu = false;
       redraw();
@@ -145,7 +163,7 @@ function touchEnded() {
     }
 
     // Lock/Unlock the brush:
-    if (mouseY > (margin + 3*iconSize + 2*iconSpacing) && mouseY < (margin +4*iconSize + 3*iconSpacing)) {
+    if (mouseY > (margin + 4*iconSize + 2*iconSpacing) && mouseY < (margin +5*iconSize + 4*iconSpacing)) {
       if (stateLocked) {
         stateLocked = false;
       }
@@ -159,7 +177,7 @@ function touchEnded() {
     }
 
     // Toggle fog opacity:
-    if (mouseY > (margin + 4*iconSize + 3*iconSpacing) && mouseY < (margin +5*iconSize + 4*iconSpacing)) {
+    if (mouseY > (margin + 5*iconSize + 4*iconSpacing) && mouseY < (margin +6*iconSize + 5*iconSpacing)) {
       if (stateFogOpacity) {
         stateFogOpacity = false;
       }
@@ -171,7 +189,7 @@ function touchEnded() {
     }
 
     // Toggle fullscreen:
-    if (mouseY > (margin + 5*iconSize + 4*iconSpacing) && mouseY < (margin +6*iconSize + 5*iconSpacing)) {
+    if (mouseY > (margin + 6*iconSize + 5*iconSpacing) && mouseY < (margin +7*iconSize + 6*iconSpacing)) {
       //fullscreen(!stateFullScreen);
       if (!stateFullscreen) {
         document.documentElement.requestFullscreen();
@@ -187,7 +205,7 @@ function touchEnded() {
     }
 
     // Refresh to reset the fog:
-    if (mouseY > (margin + 6*iconSize + 5*iconSpacing) && mouseY < (margin + 7*iconSize + 6*iconSpacing)) {
+    if (mouseY > (margin + 7*iconSize + 6*iconSpacing) && mouseY < (margin + 8*iconSize + 7*iconSpacing)) {
       initiateFog();
       stateShowMenu = false;
       redraw();
@@ -204,6 +222,7 @@ function scratchFog() {
     redraw();
     return;
   }
+  loop();
   let brushColor = color(0, 0, 0 ,0);
   if (stateErase) {
     brushColor = color(0, 0, 0, 255)
@@ -218,6 +237,7 @@ function scratchFog() {
   }
   fog.updatePixels();
   redraw();
+  noLoop();
 }
 function initiateFog() {
   // Set all pixels to 0 (black)
@@ -250,9 +270,9 @@ function scaleUI() {
   // This function lets us adjust the scale of the UI (menu) to fit smaller screens and screens with
   //   high pixel density.
   let scaleFactor = 1;
-  console.log(displayDensity());
-  let smallestDim = Math.min(width, height)*displayDensity();
-  console.log(smallestDim);
+  //console.log(displayDensity());
+  let smallestDim = Math.min(width, height); //*displayDensity();
+  //console.log(smallestDim);
   if (smallestDim < 960 && smallestDim >= 720) {
     scaleFactor = 0.75;
   }
@@ -269,13 +289,15 @@ function scaleUI() {
   brushSize = 40*scaleFactor;
 }
 function showUI() {
-  let fullMenuHeight = (margin*2) + (iconSize*8) + (iconSpacing*7);
+  let fullMenuHeight = (margin*2) + (iconSize*9) + (iconSpacing*8);
   let fullMenuWidth = (margin*2) + iconSize;
   fill(0, 0, 0);
   if (stateShowMenu) {
     rect(0, 0, fullMenuWidth, fullMenuHeight);
     let iconPosY = margin;
     image(imgMenu, margin, iconPosY, iconSize, iconSize);
+    iconPosY += (iconSpacing + iconSize);
+    image(imgUndo, margin, iconPosY, iconSize, iconSize);
     iconPosY += (iconSpacing + iconSize);
     image(imgBlackBrush, margin, iconPosY, iconSize, iconSize);
     iconPosY += (iconSpacing + iconSize);
@@ -321,6 +343,7 @@ function showUI() {
 }
 function initiateMenu() {
   imgMenu = loadImage('./data/baseline_menu_white_48dp.png');
+  imgUndo = loadImage('./data/outline_undo_white_48dp.png');
   imgBlackBrush = loadImage('./data/baseline_brush_black_48dp.png');
   imgWhiteBrush = loadImage('./data/baseline_lens_white_48dp.png');
   imgUnlocked = loadImage('./data/baseline_lock_open_white_48dp.png');
