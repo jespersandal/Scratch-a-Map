@@ -3,6 +3,7 @@
 
 // Global variables:
 let currentMap;
+let mapFileName;
 let fog;
 let lastFog;
 let userFile;
@@ -43,7 +44,7 @@ let brushSize;
 function setup() {
   // put setup code here
   createCanvas(windowWidth, windowHeight);  // Crude fix for compensating for scrollbars
-  colorMode(HSB);
+  //colorMode(RGBA);
   background(0, 0, 0);
   scaleUI();
   // Adding HTML for the file input to load a map:
@@ -52,9 +53,11 @@ function setup() {
   filePicker.parent(inputWrapper);
   filePicker.hide();
   inputWrapper.hide();
-
+  //console.log(displayDensity()); // zoom
+  //console.log(pixelDensity()); // Retina etc.
   initiateMenu();
   currentMap = loadImage('dungeonmap.jpeg');
+  mapFileName = 'dungeonmap.jpeg';
   fog = createImage(width, height);
   initiateFog();
   lastFog = fog.get();
@@ -89,7 +92,7 @@ function drawMap() {
 }
 function drawFog() {
   if (stateFogOpacity) {
-    tint(0, 0, 0, 0.5);
+    tint(0, 0, 0, 128);
     image(fog, 0, 0);
     noTint();
   }
@@ -99,10 +102,17 @@ function drawFog() {
 }
 function touchMoved() {
   scratchFog();
+  return false;
+}
+function mouseDragged() {
+  scratchFog();
+  return false;
 }
 function touchStarted() {
+  loop();
   // Menu is open, but user pressed outside menu area:
-  if (mouseX > 100 && stateShowMenu) {
+  let menuWidth = 2*margin + iconSize;
+  if (mouseX > menuWidth && stateShowMenu) {
     stateShowMenu = false;
     redraw();
     return false;
@@ -110,6 +120,7 @@ function touchStarted() {
   else if (mouseX > 100 && !stateShowMenu && !stateLocked) {
     // Save the fog for undo:
     lastFog = fog.get();
+    //scratchFog();
     redraw();
   }
   else {
@@ -117,20 +128,21 @@ function touchStarted() {
   }
 }
 function touchEnded() {
-  loop();
-  // We use x:100 as a rough border of the menu. TODO: Add this to scaleUI.
-  if (mouseX < 100 && !stateShowMenu) {
-    if (mouseY < 100) {
+  //loop();
+  let menuWidth = 2*margin + iconSize;
+  if (mouseX < menuWidth && !stateShowMenu) {
+    if (mouseY < menuWidth) {  // re-using menuWidth, since the area is a square.
       stateShowMenu = true;
+      // Good place to save fog? storeItem('mapFileName', fog) -> See working solution.
       redraw();
       return false;
     }
   }
-  else if (mouseX < 100 && stateShowMenu) {
+  else if (mouseX < menuWidth && stateShowMenu) {
     // Toggle the menu (burger button):
     if (mouseY < (margin + iconSize + iconSpacing)) {
       stateShowMenu = false;
-      noLoop();
+      //noLoop();
       redraw();
       return false;
     }
@@ -172,7 +184,7 @@ function touchEnded() {
       }
       stateShowMenu = false;
       redraw();
-      noLoop();
+      //noLoop();
       return false;
     }
 
@@ -213,7 +225,8 @@ function touchEnded() {
     }
   }
   else {
-    noLoop();
+    redraw();
+    //noLoop();
   }
 }
 function scratchFog() {
@@ -227,17 +240,44 @@ function scratchFog() {
   if (stateErase) {
     brushColor = color(0, 0, 0, 255)
   }
+  //console.log(alpha(brushColor));
+  //console.log(brushSize);
   fog.loadPixels();
-  let x = mouseX - brushSize/2;
-  let y = mouseY - brushSize/2;
+  let x = int(mouseX - brushSize/2);
+  let w = int(mouseX + brushSize/2);
+  let y = int(mouseY - brushSize/2);
+  let h = int(mouseY + brushSize/2);
+  /* let scratchArea = fog.get(x, y, brushSize, brushSize);
+  scratchArea.loadPixels();
+  for (let i = 3; i < scratchArea.pixels.length; i += 4) {
+    scratchArea.pixels[i] = alpha(brushColor);
+  }
+  scratchArea.updatePixels(); */
+  //fog.copy(imgLocked, 0, 0, iconSize, iconSize, x, y, brushSize, brushSize);
+  //fog.set(x, y, scratchArea);
+  //fog.set(x, y, imgLocked);
+  /* let d = pixelDensity();
+  for (let i = x; i < w; i++) {
+    for (let j = y; j < h; j++) {
+      for (let k = 0; k < d; k++) {
+        for (let l = 0; l < d; l++) {
+          //fog.set(x+i, y+j, brushColor);
+          index = 4 * ((j * d + l) * fog.width * d + (i * d + k));
+          fog.pixels[index + 3] = alpha(brushColor);
+        }
+      }
+    }
+  } */
   for (let i = 0; i < brushSize; i++) {
     for (let j = 0; j < brushSize; j++) {
-      fog.set(x+i, y+j, brushColor);
+      fog.set(x+i, y+j, brushColor);  // Not the fastest, but the only reliable way.
     }
   }
   fog.updatePixels();
-  redraw();
-  noLoop();
+  image(fog, 0, 0);  // This somehow updates the displayed fog while touchMoved unlike drawFog().
+  //redraw();
+  //drawFog();
+  //noLoop();
 }
 function initiateFog() {
   // Set all pixels to 0 (black)
@@ -257,7 +297,9 @@ function handleFile(file) {
   if (file.type === 'image') {
     userFile = createImg(file.data, '');
     userFile.hide();
+    // Save current fog?
     changeMap(userFile);
+    mapFileName = file.name;
   }
 }
 function changeMap(userMap) {
@@ -282,11 +324,11 @@ function scaleUI() {
   else if (smallestDim < 480) {
     scaleFactor = 0.25;
   }
-  console.log(scaleFactor);
-  margin = 8*displayDensity()*scaleFactor;
-  iconSize = 48*displayDensity()*scaleFactor;
-  iconSpacing = 16*displayDensity()*scaleFactor;
-  brushSize = 40*scaleFactor;
+  //console.log(scaleFactor);
+  margin = int(8*displayDensity()*scaleFactor);
+  iconSize = int(48*displayDensity()*scaleFactor);
+  iconSpacing = int(16*displayDensity()*scaleFactor);
+  brushSize = int(40*scaleFactor);
 }
 function showUI() {
   let fullMenuHeight = (margin*2) + (iconSize*9) + (iconSpacing*8);
