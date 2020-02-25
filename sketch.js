@@ -280,6 +280,7 @@ function scratchFog() {
   //noLoop();
 }
 function initiateFog() {
+  // Check for an existing fog associated with mapFileName in localStorage.
   // Set all pixels to 0 (black)
   fog.loadPixels();
   for (let i = 0; i < fog.pixels.length; i++) {
