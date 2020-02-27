@@ -15,6 +15,9 @@ let stateFullscreen = false;
 let stateLocked = false;
 let stateErase = false;
 let stateFogOpacity = true; // True means a semi-transparent fog. False means completely opaque.
+let stateBrush = 2; // 1: small brush. 2: medium brush. 4: large brush.
+let stateShowBlackBrushes = false;
+let stateShowWhiteBrushes = false;
 
 // UI icons:
 let imgMenu;
@@ -141,6 +144,8 @@ function touchEnded() {
   else if (mouseX < menuWidth && stateShowMenu) {
     // Toggle the menu (burger button):
     if (mouseY < (margin + iconSize + iconSpacing)) {
+      stateShowBlackBrushes = false;
+      stateShowWhiteBrushes = false;
       stateShowMenu = false;
       //noLoop();
       redraw();
@@ -161,7 +166,13 @@ function touchEnded() {
     // Set brush to black (draw fog):
     if (mouseY > (margin + 2*iconSize + iconSpacing) && mouseY < (margin +3*iconSize + 2*iconSpacing)) {
       stateErase = true;
-      stateShowMenu = false;
+      //stateShowMenu = false;
+      if (stateShowBlackBrushes) {
+        stateShowBlackBrushes = false;
+      }
+      else {
+        stateShowBlackBrushes = true;
+      }
       redraw();
       return false;
     }
@@ -169,7 +180,13 @@ function touchEnded() {
     // Set brush to white/transparent (erase fog):
     if (mouseY > (margin + 3*iconSize + iconSpacing) && mouseY < (margin +4*iconSize + 3*iconSpacing)) {
       stateErase = false;
-      stateShowMenu = false;
+      //stateShowMenu = false;
+      if (stateShowWhiteBrushes) {
+        stateShowWhiteBrushes = false;
+      }
+      else {
+        stateShowWhiteBrushes = true;
+      }
       redraw();
       return false;
     }
@@ -197,6 +214,7 @@ function touchEnded() {
         stateFogOpacity = true;
       }
       redraw();
+      stateShowMenu = false;
       return false;
     }
 
@@ -228,6 +246,70 @@ function touchEnded() {
     redraw();
     //noLoop();
   }
+  // Check for pick of black brush size from submenu:
+  if (mouseX > menuWidth && stateShowBlackBrushes) {
+    let submenuRightBorder = menuWidth + (margin * 2) + (iconSize * 3) + (iconSpacing * 2);
+    let blackBrushPosY = (margin + 2*iconSize + 2*iconSpacing);
+    if (mouseX < submenuRightBorder && mouseY > blackBrushPosY) {
+      if (mouseY < (blackBrushPosY + iconSize)) {
+        if (mouseX > menuWidth && mouseX < (menuWidth + iconSize)) {
+          stateBrush = 1;
+          stateShowBlackBrushes = false;
+          stateShowMenu = false;
+          return false;
+        }
+        else if (mouseX > (menuWidth + iconSize) && mouseX < (menuWidth + (2 * iconSize))) {
+          stateBrush = 2;
+          stateShowBlackBrushes = false;
+          stateShowMenu = false;
+          return false;
+        }
+        else if (mouseX > (menuWidth + (2 * iconSize)) && mouseX < submenuRightBorder) {
+          stateBrush = 4;
+          stateShowBlackBrushes = false;
+          stateShowMenu = false;
+          return false;
+        }
+      }
+    }
+    else {
+      stateShowBlackBrushes = false;
+      stateShowMenu = false;
+      return false;
+    }
+  }
+  // Check for pick of white brush size from submenu:
+  if (mouseX > menuWidth && stateShowWhiteBrushes) {
+    let submenuRightBorder = menuWidth + (margin * 2) + (iconSize * 3) + (iconSpacing * 2);
+    let whiteBrushPosY = (margin + 3*iconSize + 3*iconSpacing);
+    if (mouseX < submenuRightBorder && mouseY > whiteBrushPosY) {
+      if (mouseY < (whiteBrushPosY + iconSize)) {
+        if (mouseX > menuWidth && mouseX < (menuWidth + iconSize)) {
+          stateBrush = 1;
+          stateShowWhiteBrushes = false;
+          stateShowMenu = false;
+          return false;
+        }
+        else if (mouseX > (menuWidth + iconSize) && mouseX < (menuWidth + (2 * iconSize))) {
+          stateBrush = 2;
+          stateShowWhiteBrushes = false;
+          stateShowMenu = false;
+          return false;
+        }
+        else if (mouseX > (menuWidth + (2 * iconSize)) && mouseX < submenuRightBorder) {
+          stateBrush = 4;
+          stateShowWhiteBrushes = false;
+          stateShowMenu = false;
+          return false;
+        }
+      }
+    }
+    else {
+      stateShowWhiteBrushes = false;
+      stateShowMenu = false;
+      return false;
+    }
+  }
 }
 function scratchFog() {
   // Check if the tool is locked:
@@ -240,36 +322,15 @@ function scratchFog() {
   if (stateErase) {
     brushColor = color(0, 0, 0, 255)
   }
-  //console.log(alpha(brushColor));
-  //console.log(brushSize);
+  // To allow for different brush sizes:
+  let currentBrushSize = brushSize * stateBrush;
   fog.loadPixels();
-  let x = int(mouseX - brushSize/2);
-  let w = int(mouseX + brushSize/2);
-  let y = int(mouseY - brushSize/2);
-  let h = int(mouseY + brushSize/2);
-  /* let scratchArea = fog.get(x, y, brushSize, brushSize);
-  scratchArea.loadPixels();
-  for (let i = 3; i < scratchArea.pixels.length; i += 4) {
-    scratchArea.pixels[i] = alpha(brushColor);
-  }
-  scratchArea.updatePixels(); */
-  //fog.copy(imgLocked, 0, 0, iconSize, iconSize, x, y, brushSize, brushSize);
-  //fog.set(x, y, scratchArea);
-  //fog.set(x, y, imgLocked);
-  /* let d = pixelDensity();
-  for (let i = x; i < w; i++) {
-    for (let j = y; j < h; j++) {
-      for (let k = 0; k < d; k++) {
-        for (let l = 0; l < d; l++) {
-          //fog.set(x+i, y+j, brushColor);
-          index = 4 * ((j * d + l) * fog.width * d + (i * d + k));
-          fog.pixels[index + 3] = alpha(brushColor);
-        }
-      }
-    }
-  } */
-  for (let i = 0; i < brushSize; i++) {
-    for (let j = 0; j < brushSize; j++) {
+  let x = int(mouseX - currentBrushSize/2);
+  let w = int(mouseX + currentBrushSize/2);
+  let y = int(mouseY - currentBrushSize/2);
+  let h = int(mouseY + currentBrushSize/2);
+  for (let i = 0; i < currentBrushSize; i++) {
+    for (let j = 0; j < currentBrushSize; j++) {
       fog.set(x+i, y+j, brushColor);  // Not the fastest, but the only reliable way.
     }
   }
@@ -311,7 +372,7 @@ function changeMap(userMap) {
 }
 function scaleUI() {
   // This function lets us adjust the scale of the UI (menu) to fit smaller screens and screens with
-  //   high pixel density.
+  //   high pixel density. However, there's a difference in behaviour between OS's.
   let scaleFactor = 1;
   //console.log(displayDensity());
   let smallestDim = Math.min(width, height); //*displayDensity();
@@ -343,8 +404,53 @@ function showUI() {
     image(imgUndo, margin, iconPosY, iconSize, iconSize);
     iconPosY += (iconSpacing + iconSize);
     image(imgBlackBrush, margin, iconPosY, iconSize, iconSize);
+    if (stateShowBlackBrushes) {
+      stroke(0);
+      fill(0);
+      let submenuX = (margin * 2) + iconSize;
+      let submenuWidth = (margin * 2) + (iconSize * 3) + (iconSpacing * 2);
+      let submenuHeight = (iconSpacing * 2) + iconSize;
+      rect(submenuX, (iconPosY - iconSpacing), submenuWidth, submenuHeight);
+      stroke(255);
+      strokeWeight(4);
+      let subIconPosX = submenuX + margin + int(iconSize/2);
+      let subIconPosY = iconPosY + int(iconSize/2);
+      let subIconSize = int(iconSize/4);
+      ellipse(subIconPosX, subIconPosY, subIconSize, subIconSize);
+      subIconPosX += iconSize;
+      subIconSize *= 2;
+      ellipse(subIconPosX, subIconPosY, subIconSize, subIconSize);
+      subIconPosX += iconSize + iconSpacing;
+      subIconSize *= 2;
+      ellipse(subIconPosX, subIconPosY, subIconSize, subIconSize);
+      noStroke();
+      noFill();
+    }
     iconPosY += (iconSpacing + iconSize);
     image(imgWhiteBrush, margin, iconPosY, iconSize, iconSize);
+    if (stateShowWhiteBrushes) {
+      stroke(0);
+      fill(0);
+      let submenuX = (margin * 2) + iconSize;
+      let submenuWidth = (margin * 2) + (iconSize * 3) + (iconSpacing * 2);
+      let submenuHeight = (iconSpacing * 2) + iconSize;
+      rect(submenuX, (iconPosY - iconSpacing), submenuWidth, submenuHeight);
+      stroke(255);
+      strokeWeight(4);
+      fill(255);
+      let subIconPosX = submenuX + margin + int(iconSize/2);
+      let subIconPosY = iconPosY + int(iconSize/2);
+      let subIconSize = int(iconSize/4);
+      ellipse(subIconPosX, subIconPosY, subIconSize, subIconSize);
+      subIconPosX += iconSize;
+      subIconSize *= 2;
+      ellipse(subIconPosX, subIconPosY, subIconSize, subIconSize);
+      subIconPosX += iconSize + iconSpacing;
+      subIconSize *= 2;
+      ellipse(subIconPosX, subIconPosY, subIconSize, subIconSize);
+      noStroke();
+      noFill();
+    }
     iconPosY += (iconSpacing + iconSize);
     if (stateLocked) {
       image(imgLocked, margin, iconPosY, iconSize, iconSize);
