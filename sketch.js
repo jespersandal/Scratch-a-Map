@@ -18,6 +18,7 @@ let stateFogOpacity = true; // True means a semi-transparent fog. False means co
 let stateBrush = 2; // 1: small brush. 2: medium brush. 4: large brush.
 let stateShowBlackBrushes = false;
 let stateShowWhiteBrushes = false;
+let idleTimer; // This is used for turning off the loop, when the application is idling.
 
 // UI icons:
 let imgMenu;
@@ -56,20 +57,23 @@ function setup() {
   filePicker.parent(inputWrapper);
   filePicker.hide();
   inputWrapper.hide();
-  //console.log(displayDensity()); // zoom
-  //console.log(pixelDensity()); // Retina etc.
   initiateMenu();
   currentMap = loadImage('dungeonmap.jpeg');
   mapFileName = 'dungeonmap.jpeg';
   fog = createImage(width, height);
   initiateFog();
   lastFog = fog.get();
+  idleTimer = millis();
 }
 function draw() {
   background(0, 0, 0);
   drawMap();
   drawFog();
   showUI();
+  // This will turn off the draw loop after 60 seconds of no interaction:
+  if (millis() - idleTimer > 60000) {
+    noLoop();
+  }
 }
 function drawMap() {
   let mapScaledWidth;
@@ -104,15 +108,20 @@ function drawFog() {
   }
 }
 function touchMoved() {
+  loop();
+  idleTimer = millis();
   scratchFog();
   return false;
 }
 function mouseDragged() {
+  loop();
+  idleTimer = millis();
   scratchFog();
   return false;
 }
 function touchStarted() {
   loop();
+  idleTimer = millis();
   // Menu is open, but user pressed outside menu area:
   let menuWidth = 2*margin + iconSize;
   if (mouseX > menuWidth && stateShowMenu) {
@@ -123,7 +132,6 @@ function touchStarted() {
   else if (mouseX > 100 && !stateShowMenu && !stateLocked) {
     // Save the fog for undo:
     lastFog = fog.get();
-    //scratchFog();
     redraw();
   }
   else {
@@ -132,6 +140,7 @@ function touchStarted() {
 }
 function touchEnded() {
   //loop();
+  idleTimer = millis();
   let menuWidth = 2*margin + iconSize;
   if (mouseX < menuWidth && !stateShowMenu) {
     if (mouseY < menuWidth) {  // re-using menuWidth, since the area is a square.
@@ -374,9 +383,7 @@ function scaleUI() {
   // This function lets us adjust the scale of the UI (menu) to fit smaller screens and screens with
   //   high pixel density. However, there's a difference in behaviour between OS's.
   let scaleFactor = 1;
-  //console.log(displayDensity());
-  let smallestDim = Math.min(width, height); //*displayDensity();
-  //console.log(smallestDim);
+  let smallestDim = Math.min(width, height); 
   if (smallestDim < 960 && smallestDim >= 720) {
     scaleFactor = 0.75;
   }
@@ -386,7 +393,6 @@ function scaleUI() {
   else if (smallestDim < 480) {
     scaleFactor = 0.25;
   }
-  //console.log(scaleFactor);
   margin = int(8*displayDensity()*scaleFactor);
   iconSize = int(48*displayDensity()*scaleFactor);
   iconSpacing = int(16*displayDensity()*scaleFactor);
